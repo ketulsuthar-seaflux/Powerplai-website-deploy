@@ -3,23 +3,32 @@ const path = require('path');
 
 module.exports = (req, res) => {
   try {
-    const { key } = req.query;
+    let { key } = req.query;
+
     if (!key) {
-      res.status(400).send('Missing key parameter');
-      return;
+      return res.status(400).send('Missing key parameter');
+    }
+
+    if (key.startsWith('images/')) {
+      key = key.replace(/^images\//, '');
+    }
+
+    if (key.startsWith('videos/')) {
+      key = key.replace(/^videos\//, '');
     }
 
     const manifestPath = path.resolve(process.cwd(), 'airo-media.json');
+
     if (fs.existsSync(manifestPath)) {
       const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+
       if (manifest[key] && manifest[key].currentUrl) {
-        res.writeHead(302, { Location: manifest[key].currentUrl });
-        res.end();
-        return;
+        return res.redirect(302, manifest[key].currentUrl);
       }
     }
-    res.status(404).send('Asset not found');
+
+    return res.status(404).send('Asset not found');
   } catch (err) {
-    res.status(500).send(err.message);
+    return res.status(500).send(err.message);
   }
 };
