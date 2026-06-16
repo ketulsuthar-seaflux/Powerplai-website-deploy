@@ -4,18 +4,25 @@ const require = createRequire(import.meta.url);
 export default function handler(req, res) {
   try {
     let key = req.query?.key;
+    let variant = req.query?.variant;
 
-    if (!key && req.url) {
+    if (req.url) {
       try {
         const parsedUrl = new URL(req.url, 'http://localhost');
-        key = parsedUrl.searchParams.get('key');
         if (!key) {
-          let pathname = parsedUrl.pathname;
-          key = pathname.replace(/^\/(api\/)?airo-assets\//, '');
-          console.log(key);
+          key = parsedUrl.searchParams.get('key');
+          if (!key) {
+            let pathname = parsedUrl.pathname;
+            key = pathname.replace(/^\/(api\/)?airo-assets\//, '');
+          }
+        }
+        if (!variant) {
+          variant = parsedUrl.searchParams.get('variant');
         }
       } catch (e) {
-        key = req.url.replace(/^\/(api\/)?airo-assets\//, '').split('?')[0];
+        if (!key) {
+          key = req.url.replace(/^\/(api\/)?airo-assets\//, '').split('?')[0];
+        }
       }
     }
 
@@ -26,14 +33,31 @@ export default function handler(req, res) {
     key = key.replace(/^images\/|^videos\//, '');
 
     const manifest = require('../airo-media.json');
-    console.log('Menifest', manifest);
+
     const entry = manifest[key];
-    console.log('Entry', entry);
-    if (entry?.currentUrl) {
-      return res.redirect(302, entry.currentUrl);
+
+    if (!entry) {
+      return res.status(404).send('Asset not found');
     }
 
-    return res.status(404).send('Asset not found');
+    let redirectUrl = entry.currentUrl;
+
+    if (variant && redirectUrl) {
+      if (variant === 'reversed' && entry.reversedUrlMap?.[redirectUrl]) {
+        redirectUrl = entry.reversedUrlMap[redirectUrl];
+      } else if (variant === 'solid' && entry.solidUrlMap?.[redirectUrl]) {
+        redirectUrl = entry.solidUrlMap[redirectUrl];
+      } else if ((variant === 'reversedSolid' || variant === 'reversed-solid') && entry.reversedSolidUrlMap?.[redirectUrl]) {
+        redirectUrl = entry.reversedSolidUrlMap[redirectUrl];
+      }
+    }
+
+    if (redirectUrl) {
+      return res.redirect(302, redirectUrl);
+    }
+
+    return res.status(404).send('Asset URL not found');
+
   } catch (err) {
     console.error(err);
     return res.status(500).send(err.message);
