@@ -45,7 +45,10 @@ export default function handler(req, res) {
     res.setHeader("Pragma", "no-cache");
     res.setHeader("Expires", "0");
 
-    return res.redirect(302, redirectUrl);
+    const finalUrl = new URL(redirectUrl);
+    finalUrl.searchParams.set("_v", Date.now().toString());
+
+    return res.redirect(302, finalUrl.toString());
   } catch (err) {
     console.error(err);
     return res.status(500).send(err.message);
