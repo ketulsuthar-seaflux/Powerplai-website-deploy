@@ -493,7 +493,7 @@ function HeroSection() {
               objectFit: 'cover',
               objectPosition: 'center',
               display: 'block',
-              filter: 'saturate(0.15) contrast(1.1) brightness(0.5)',
+              filter: 'none',
             }}
             fetchPriority={i === 0 ? 'high' : 'low'}
           />
