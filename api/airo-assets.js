@@ -9,7 +9,7 @@ module.exports = (req, res) => {
       return;
     }
 
-    const manifestPath = path.resolve(__dirname, 'airo-media.json');
+    const manifestPath = path.resolve(process.cwd(), 'airo-media.json');
     if (fs.existsSync(manifestPath)) {
       const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
       if (manifest[key] && manifest[key].currentUrl) {
