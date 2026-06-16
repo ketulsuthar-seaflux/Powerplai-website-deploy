@@ -3,7 +3,7 @@ const require = createRequire(import.meta.url);
 
 const manifest = require("../airo-media.json");
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   try {
     const parsedUrl = new URL(req.url, "http://localhost");
 
@@ -26,29 +26,31 @@ export default function handler(req, res) {
       return res.status(404).send("Asset not found");
     }
 
-    let redirectUrl = entry.currentUrl;
+    let imageUrl = entry.currentUrl;
 
-    if (variant && redirectUrl) {
-      if (variant === "reversed" && entry.reversedUrlMap?.[redirectUrl]) {
-        redirectUrl = entry.reversedUrlMap[redirectUrl];
-      } else if (variant === "solid" && entry.solidUrlMap?.[redirectUrl]) {
-        redirectUrl = entry.solidUrlMap[redirectUrl];
-      } else if (
-        (variant === "reversedSolid" || variant === "reversed-solid") &&
-        entry.reversedSolidUrlMap?.[redirectUrl]
-      ) {
-        redirectUrl = entry.reversedSolidUrlMap[redirectUrl];
+    if (variant && entry.reversedUrlMap) {
+      if (variant === "reversed") {
+        imageUrl = entry.reversedUrlMap?.[imageUrl] || imageUrl;
+      } else if (variant === "solid") {
+        imageUrl = entry.solidUrlMap?.[imageUrl] || imageUrl;
+      } else if (variant === "reversedSolid" || variant === "reversed-solid") {
+        imageUrl = entry.reversedSolidUrlMap?.[imageUrl] || imageUrl;
       }
     }
+    const response = await fetch(imageUrl);
 
-    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
-    res.setHeader("Pragma", "no-cache");
-    res.setHeader("Expires", "0");
+    if (!response.ok) {
+      return res.status(404).send("Image fetch failed");
+    }
 
-    const finalUrl = new URL(redirectUrl);
-    finalUrl.searchParams.set("_v", Date.now().toString());
+    const buffer = Buffer.from(await response.arrayBuffer());
 
-    return res.redirect(302, finalUrl.toString());
+    // set proper headers
+    res.setHeader("Content-Type", response.headers.get("content-type") || "image/jpeg");
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+
+    return res.status(200).send(buffer);
+
   } catch (err) {
     console.error(err);
     return res.status(500).send(err.message);
