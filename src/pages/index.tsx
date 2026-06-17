@@ -1,7 +1,15 @@
 import { Helmet } from '@dr.pogodin/react-helmet';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, ChevronRight, Zap, BarChart3, Users, Shield, Mail } from 'lucide-react';
+import {
+  ArrowRight,
+  ChevronRight,
+  Zap,
+  BarChart3,
+  Users,
+  Shield,
+  Mail,
+} from 'lucide-react';
 
 // ─── Token map (mirrors the kit's CSS vars, adapted to brand palette) ──────────
 const T = {
@@ -13,13 +21,18 @@ const T = {
   chalk: '#F5F5F5',
   chalkSecondary: '#d4d4d4',
   chalkTertiary: '#8a8a8a',
-  volt: '#FF6B00',       // brand orange mapped to --volt-primary
-  blue: '#1A3A6B',       // brand blue as secondary surface
+  volt: '#FF6B00', // brand orange mapped to --volt-primary
+  blue: '#1A3A6B', // brand blue as secondary surface
   blueLight: '#1E4080',
   displayFont: "'Bebas Neue', 'Arial Narrow', sans-serif",
   bodyFont: 'Inter, system-ui, sans-serif',
   ease: 'cubic-bezier(0.4,0,0.2,1)',
 };
+
+// ─── Responsive tokens (mobile breakpoints + reusable fluid values) ───────────
+const MOBILE_BP = 640;
+const TABLET_BP = 1024;
+const SECTION_PAD_X = 'clamp(20px, 6vw, 48px)';
 
 // ─── Reusable styled components ────────────────────────────────────────────────
 
@@ -54,10 +67,10 @@ function DisplayHeadline({
   style?: React.CSSProperties;
 }) {
   const sizes = {
-    sm: 'clamp(36px, 4.5vw, 60px)',
-    md: 'clamp(48px, 6vw, 80px)',
-    lg: 'clamp(64px, 8vw, 112px)',
-    xl: 'clamp(96px, 16vw, 200px)',
+    sm: 'clamp(26px, 4.5vw, 60px)',
+    md: 'clamp(32px, 6vw, 80px)',
+    lg: 'clamp(40px, 8vw, 112px)',
+    xl: 'clamp(40px, 16vw, 200px)',
   };
   return (
     <h2
@@ -70,6 +83,8 @@ function DisplayHeadline({
         color,
         textTransform: 'uppercase' as const,
         margin: 0,
+        overflowWrap: 'break-word' as const,
+        wordBreak: 'break-word' as const,
         ...style,
       }}
     >
@@ -93,10 +108,11 @@ function FactRow({
     <div
       style={{
         display: 'flex',
+        flexWrap: 'wrap' as const,
         alignItems: 'baseline',
         justifyContent: 'space-between',
-        gap: '24px',
-        padding: '24px 0',
+        gap: 'clamp(12px, 4vw, 24px)',
+        padding: 'clamp(16px, 4vw, 24px) 0',
         borderTop: `1px solid ${T.border}`,
       }}
     >
@@ -113,7 +129,7 @@ function FactRow({
       >
         {label}
       </span>
-      <div style={{ textAlign: 'right' }}>
+      <div style={{ textAlign: 'right' as const }}>
         <span
           style={{
             fontFamily: T.displayFont,
@@ -165,7 +181,7 @@ function PillButton({
     alignItems: 'center',
     gap: '10px',
     borderRadius: '9999px',
-    padding: '16px 32px',
+    padding: 'clamp(14px, 3vw, 16px) clamp(20px, 5vw, 32px)',
     fontFamily: T.bodyFont,
     fontWeight: 700,
     fontSize: '13px',
@@ -255,13 +271,49 @@ function AiHudOverlay({ active }: { active: number }) {
         {/* Reticle SVG */}
         <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
           {/* Corner brackets */}
-          <path d="M4 16 L4 4 L16 4" stroke={T.volt} strokeWidth="2" strokeLinecap="round" />
-          <path d="M40 4 L52 4 L52 16" stroke={T.volt} strokeWidth="2" strokeLinecap="round" />
-          <path d="M52 40 L52 52 L40 52" stroke={T.volt} strokeWidth="2" strokeLinecap="round" />
-          <path d="M16 52 L4 52 L4 40" stroke={T.volt} strokeWidth="2" strokeLinecap="round" />
+          <path
+            d="M4 16 L4 4 L16 4"
+            stroke={T.volt}
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <path
+            d="M40 4 L52 4 L52 16"
+            stroke={T.volt}
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <path
+            d="M52 40 L52 52 L40 52"
+            stroke={T.volt}
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <path
+            d="M16 52 L4 52 L4 40"
+            stroke={T.volt}
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
           {/* Centre cross */}
-          <line x1="28" y1="22" x2="28" y2="34" stroke={T.volt} strokeWidth="1.5" strokeLinecap="round" />
-          <line x1="22" y1="28" x2="34" y2="28" stroke={T.volt} strokeWidth="1.5" strokeLinecap="round" />
+          <line
+            x1="28"
+            y1="22"
+            x2="28"
+            y2="34"
+            stroke={T.volt}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+          <line
+            x1="22"
+            y1="28"
+            x2="34"
+            y2="28"
+            stroke={T.volt}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
           {/* Centre dot */}
           <circle cx="28" cy="28" r="2" fill={T.volt} />
         </svg>
@@ -287,17 +339,11 @@ function AiHudOverlay({ active }: { active: number }) {
         ))}
       </div>
 
-      {/* ── Right-side metric panel ── */}
+      {/* ── Right-side metric panel (hidden on phones to avoid overlapping the headline) ── */}
       <div
+        className="pp-hud-metrics"
         style={{
-          position: 'absolute',
-          top: '50%',
-          right: '48px',
-          transform: 'translateY(-50%)',
           display: 'flex',
-          flexDirection: 'column',
-          gap: '2px',
-          opacity: 0.82,
         }}
       >
         {data.metrics.map((m) => (
@@ -309,6 +355,7 @@ function AiHudOverlay({ active }: { active: number }) {
               borderLeft: `2px solid ${T.volt}`,
               padding: '10px 14px',
               minWidth: '160px',
+              maxWidth: '180px',
             }}
           >
             <div
@@ -322,7 +369,9 @@ function AiHudOverlay({ active }: { active: number }) {
             >
               {m.label}
             </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+            <div
+              style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}
+            >
               <span
                 style={{
                   ...mono,
@@ -335,7 +384,9 @@ function AiHudOverlay({ active }: { active: number }) {
                 {m.value}
               </span>
               {m.unit && (
-                <span style={{ ...mono, fontSize: '11px', color: T.chalkTertiary }}>
+                <span
+                  style={{ ...mono, fontSize: '11px', color: T.chalkTertiary }}
+                >
                   {m.unit}
                 </span>
               )}
@@ -355,16 +406,13 @@ function AiHudOverlay({ active }: { active: number }) {
         ))}
       </div>
 
-      {/* ── Bottom-left: scan line + AI label ── */}
+      {/* ── Bottom-left: scan line + AI label (hidden on phones to avoid overlapping the headline) ── */}
       <div
+        className="pp-hud-bottom-label"
         style={{
           position: 'absolute',
-          bottom: '100px',
-          left: '48px',
           display: 'flex',
           alignItems: 'center',
-          gap: '12px',
-          opacity: 0.6,
         }}
       >
         <div
@@ -400,7 +448,13 @@ function AiHudOverlay({ active }: { active: number }) {
 
       {/* ── SVG scan lines across image ── */}
       <svg
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.06 }}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          opacity: 0.06,
+        }}
         preserveAspectRatio="none"
       >
         {Array.from({ length: 18 }).map((_, i) => (
@@ -416,13 +470,101 @@ function AiHudOverlay({ active }: { active: number }) {
         ))}
       </svg>
 
-      {/* Blink keyframe injected via style tag */}
+      {/* Blink keyframe + mobile HUD visibility rules injected via style tag */}
       <style>{`
-        @keyframes hudBlink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.15; }
-        }
-      `}</style>
+  @keyframes hudBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.15; }
+  }
+
+  /* Default desktop metrics styles */
+  .pp-hud-metrics {
+    position: absolute;
+    top: 50%;
+    right: clamp(10px, 4vw, 48px);
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    opacity: 0.82;
+  }
+
+  /* Small screens */
+  @media (max-width: ${MOBILE_BP}px) {
+
+    /* KEEPING your old bottom-label logic */
+    .pp-hud-bottom-label {
+      display: none;
+      bottom: 80px;
+      left: 25px;
+      gap: 12px;
+      opacity: 0.6;
+    }
+
+    /* Metrics sit below the tags on mobile and avoid overlapping the hero content */
+    .pp-hud-metrics {
+      position: absolute;
+      top: clamp(255px, 18vw, 170px);
+      left: clamp(210px, 4vw, 24px);
+      transform: none;
+      width: min(20px, calc(100% - 62px));
+      margin-top: 0;
+
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+
+      opacity: 1;
+    }
+
+    .pp-hud-metrics > div {
+      width: 100%;
+      min-width: 0;
+      max-width: none;
+    }
+
+    /* Hero section mobile adjustments */
+    .hero-section {
+      min-height: unset;
+      height: 100svh;
+      padding-left: clamp(16px, 6vw, 24px);
+      padding-right: clamp(16px, 6vw, 24px);
+    }
+
+    .hero-section .hero-inner {
+      padding-top: clamp(28px, 6vw, 44px);
+      padding-bottom: clamp(32px, 8vw, 56px);
+      align-items: flex-start;
+    }
+
+    .hero-section .hero-eyebrow {
+      font-size: 11px !important;
+      margin-bottom: 16px !important;
+    }
+
+    .hero-section .hero-title {
+      font-size: clamp(30px, 12vw, 68px) !important;
+      line-height: 1 !important;
+      max-width: 100%;
+    }
+
+    .hero-section .hero-content img {
+      min-height: 100%;
+      object-position: center top;
+    }
+  }
+
+  /* Big screens */
+  @media (min-width: 1200px) {
+    .pp-hud-bottom-label {
+      bottom: 100px;
+      left: 48px;
+      gap: 20px;
+      opacity: 1;
+    }
+  }
+`}</style>
     </div>
   );
 }
@@ -460,6 +602,7 @@ function HeroSection() {
   return (
     <section
       id="hero"
+      className="hero-section"
       aria-label="PowerplAI Sports — The Future of Sport"
       style={{
         position: 'relative',
@@ -476,6 +619,7 @@ function HeroSection() {
         <div
           key={slide.src}
           aria-hidden={i !== active}
+          className="hero-content"
           style={{
             position: 'absolute',
             inset: 0,
@@ -507,7 +651,8 @@ function HeroSection() {
           position: 'absolute',
           inset: 0,
           zIndex: 1,
-          background: 'linear-gradient(to top, rgba(13,13,13,0.88) 0%, rgba(13,13,13,0.25) 55%, rgba(13,13,13,0.1) 100%)',
+          background:
+            'linear-gradient(to top, rgba(13,13,13,0.88) 0%, rgba(13,13,13,0.25) 55%, rgba(13,13,13,0.1) 100%)',
         }}
       />
 
@@ -530,14 +675,15 @@ function HeroSection() {
 
       {/* Content — bottom anchored */}
       <div
+        className="hero-inner"
         style={{
           position: 'relative',
           zIndex: 3,
           width: '100%',
           paddingTop: 'calc(64px + 48px)',
-          paddingBottom: '80px',
-          paddingLeft: '48px',
-          paddingRight: '48px',
+          paddingBottom: 'clamp(48px, 9vw, 80px)',
+          paddingLeft: SECTION_PAD_X,
+          paddingRight: SECTION_PAD_X,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'flex-start',
@@ -547,6 +693,7 @@ function HeroSection() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' as const, delay: 0.2 }}
+          className="hero-eyebrow"
           style={{
             fontFamily: T.bodyFont,
             fontSize: '13px',
@@ -565,9 +712,10 @@ function HeroSection() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: 'easeOut' as const, delay: 0.35 }}
+          className="hero-title"
           style={{
             fontFamily: T.displayFont,
-            fontSize: 'clamp(80px, 14vw, 180px)',
+            fontSize: 'clamp(36px, 14vw, 180px)',
             fontWeight: 400,
             letterSpacing: '0.01em',
             lineHeight: 0.88,
@@ -575,10 +723,15 @@ function HeroSection() {
             textTransform: 'uppercase' as const,
             margin: 0,
             pointerEvents: 'none',
+            overflowWrap: 'break-word' as const,
+            wordBreak: 'break-word' as const,
+            maxWidth: '100%',
           }}
         >
-          Unlocking<br />
-          <span style={{ color: T.volt }}>Sports</span><br />
+          Unlocking
+          <br />
+          <span style={{ color: T.volt }}>Sports</span>
+          <br />
           Intelligence
         </motion.h1>
 
@@ -612,7 +765,8 @@ function HeroSection() {
                   height: '3px',
                   borderRadius: '2px',
                   background: i === active ? T.volt : 'rgba(255,255,255,0.3)',
-                  transition: 'width 400ms cubic-bezier(0.4,0,0.2,1), background 400ms',
+                  transition:
+                    'width 400ms cubic-bezier(0.4,0,0.2,1), background 400ms',
                 }}
               />
             </button>
@@ -626,7 +780,7 @@ function HeroSection() {
         style={{
           position: 'absolute',
           bottom: '20px',
-          right: '48px',
+          right: 'clamp(16px, 5vw, 48px)',
           zIndex: 3,
           fontFamily: 'monospace',
           fontSize: '10px',
@@ -635,6 +789,7 @@ function HeroSection() {
           padding: '3px 8px',
           borderRadius: '2px',
           lineHeight: 1.4,
+          whiteSpace: 'nowrap' as const,
         }}
       >
         powerplai.sports / 2026
@@ -647,19 +802,40 @@ function HeroSection() {
 
 function PitchSection() {
   const facts = [
-    { label: 'global sports tech market', value: '$40B+', sub: 'projected by 2030', volt: false },
-    { label: 'ai adoption in elite sport', value: '78%', sub: 'of top-tier clubs using ai tools', volt: true },
-    { label: 'avg performance improvement', value: '23%', sub: 'with data-driven coaching', volt: false },
-    { label: 'injury reduction rate', value: '31%', sub: 'via predictive analytics', volt: true },
+    {
+      label: 'global sports tech market',
+      value: '$40B+',
+      sub: 'projected by 2030',
+      volt: false,
+    },
+    {
+      label: 'ai adoption in elite sport',
+      value: '78%',
+      sub: 'of top-tier clubs using ai tools',
+      volt: true,
+    },
+    {
+      label: 'avg performance improvement',
+      value: '23%',
+      sub: 'with data-driven coaching',
+      volt: false,
+    },
+    {
+      label: 'injury reduction rate',
+      value: '31%',
+      sub: 'via predictive analytics',
+      volt: true,
+    },
   ];
 
   return (
     <section
       id="why"
       aria-labelledby="pitch-heading"
+      className="pp-pitch-grid"
       style={{
         borderTop: `1px solid ${T.border}`,
-        padding: 'clamp(80px, 12vw, 140px) 48px',
+        padding: `clamp(80px, 12vw, 140px) ${SECTION_PAD_X}`,
         display: 'grid',
         gridTemplateColumns: '55fr 45fr',
         gap: 'clamp(48px, 7vw, 96px)',
@@ -677,9 +853,12 @@ function PitchSection() {
       >
         <SectionEyebrow>Why Sports Tech Matters</SectionEyebrow>
         <DisplayHeadline size="lg" style={{ marginBottom: '40px' }}>
-          Technology<br />
-          Is the New<br />
-          Competitive<br />
+          Technology
+          <br />
+          Is the New
+          <br />
+          Competitive
+          <br />
           Edge
         </DisplayHeadline>
 
@@ -693,10 +872,24 @@ function PitchSection() {
             marginBottom: '20px',
           }}
         >
-          POWERPLAI SPORTS was born from the belief that sport's greatest competitive advantages are often hidden in plain sight—within data, patterns, and insights that traditional approaches overlook. Drawing inspiration from the analytics revolution that transformed global sport, we harness AI and advanced performance intelligence to enable smarter decisions, uncover untapped value, and redefine how sporting success is built.
+          POWERPLAI SPORTS was born from the belief that sport's greatest
+          competitive advantages are often hidden in plain sight—within data,
+          patterns, and insights that traditional approaches overlook. Drawing
+          inspiration from the analytics revolution that transformed global
+          sport, we harness AI and advanced performance intelligence to enable
+          smarter decisions, uncover untapped value, and redefine how sporting
+          success is built.
         </p>
 
-        <PillButton href="#contact" onClick={(e) => { e.preventDefault(); document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }); }}>
+        <PillButton
+          href="#contact"
+          onClick={(e) => {
+            e.preventDefault();
+            document
+              .getElementById('contact')
+              ?.scrollIntoView({ behavior: 'smooth' });
+          }}
+        >
           Explore Our Vision <ArrowRight size={16} />
         </PillButton>
       </motion.div>
@@ -708,13 +901,33 @@ function PitchSection() {
         viewport={{ once: true }}
         transition={{ duration: 0.7, ease: 'easeOut' as const, delay: 0.15 }}
         aria-label="Sports technology at a glance"
+        className="pp-pitch-aside"
         style={{ paddingTop: 'clamp(96px, 9vw, 136px)' }}
       >
         {facts.map((f) => (
-          <FactRow key={f.label} label={f.label} value={f.value} sub={f.sub} voltValue={f.volt} />
+          <FactRow
+            key={f.label}
+            label={f.label}
+            value={f.value}
+            sub={f.sub}
+            voltValue={f.volt}
+          />
         ))}
         <div style={{ borderTop: `1px solid ${T.border}` }} />
       </motion.aside>
+
+      {/* Responsive: stack the two columns and reset the alignment offset on phones/small tablets */}
+      <style>{`
+        @media (max-width: 760px) {
+          .pp-pitch-grid {
+            grid-template-columns: 1fr !important;
+            gap: 40px !important;
+          }
+          .pp-pitch-aside {
+            padding-top: 0px !important;
+          }
+        }
+      `}</style>
     </section>
   );
 }
@@ -722,7 +935,11 @@ function PitchSection() {
 // ─── Section: About ────────────────────────────────────────────────────────────
 
 const teamMembers = [
-  { name: 'Abhishek Binayykia', role: 'Founder & Chief Executive Officer', initials: 'AB' },
+  {
+    name: 'Abhishek Binayykia',
+    role: 'Founder & Chief Executive Officer',
+    initials: 'AB',
+  },
   { name: 'Ashish Shah', role: 'Advisor', initials: 'AS' },
   { name: 'Shweta Gandre', role: 'Director', initials: 'SG' },
   { name: 'TBD', role: 'Head of Product', initials: 'TBD' },
@@ -759,7 +976,7 @@ function AboutSection() {
       style={{ background: T.bg, borderTop: `1px solid ${T.border}` }}
     >
       {/* What We Do */}
-      <div style={{ padding: 'clamp(80px, 10vw, 120px) 48px' }}>
+      <div style={{ padding: `clamp(80px, 10vw, 120px) ${SECTION_PAD_X}` }}>
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -780,15 +997,21 @@ function AboutSection() {
               maxWidth: '70ch',
             }}
           >
-            PowerplAI Sports is a sports technology venture building the next generation of AI-powered tools for athletes, coaches, and sports organisations. We combine deep domain expertise in sport science with cutting-edge machine learning to deliver measurable performance gains.
+            PowerplAI Sports is a sports technology venture building the next
+            generation of AI-powered tools for athletes, coaches, and sports
+            organisations. We combine deep domain expertise in sport science
+            with cutting-edge machine learning to deliver measurable performance
+            gains.
           </p>
         </motion.div>
 
         {/* Pillars grid */}
         <div
+          className="pp-pillars-grid"
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+            gridTemplateColumns:
+              'repeat(auto-fit, minmax(min(260px, 100%), 1fr))',
             gap: '2px',
             background: T.border,
             border: `1px solid ${T.border}`,
@@ -800,10 +1023,14 @@ function AboutSection() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, ease: 'easeOut' as const, delay: i * 0.08 }}
+              transition={{
+                duration: 0.5,
+                ease: 'easeOut' as const,
+                delay: i * 0.08,
+              }}
               style={{
                 background: T.surface,
-                padding: '40px 32px',
+                padding: 'clamp(28px, 5vw, 40px) clamp(20px, 4vw, 32px)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '16px',
@@ -856,7 +1083,7 @@ function AboutSection() {
       <div
         style={{
           borderTop: `1px solid ${T.border}`,
-          padding: 'clamp(64px, 8vw, 100px) 48px',
+          padding: `clamp(64px, 8vw, 100px) ${SECTION_PAD_X}`,
           background: T.surfaceBlue,
         }}
       >
@@ -872,9 +1099,11 @@ function AboutSection() {
         </motion.div>
 
         <div
+          className="pp-team-grid"
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gridTemplateColumns:
+              'repeat(auto-fit, minmax(min(220px, 100%), 1fr))',
             gap: '2px',
             background: `${T.blueLight}60`,
           }}
@@ -885,10 +1114,14 @@ function AboutSection() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, ease: 'easeOut' as const, delay: i * 0.08 }}
+              transition={{
+                duration: 0.5,
+                ease: 'easeOut' as const,
+                delay: i * 0.08,
+              }}
               style={{
                 background: T.surfaceBlue,
-                padding: '40px 32px',
+                padding: 'clamp(28px, 5vw, 40px) clamp(20px, 4vw, 32px)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '16px',
@@ -959,7 +1192,7 @@ function ProductsSection() {
       style={{
         background: T.bg,
         borderTop: `1px solid ${T.border}`,
-        padding: 'clamp(80px, 12vw, 140px) 48px',
+        padding: `clamp(80px, 12vw, 140px) ${SECTION_PAD_X}`,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-start',
@@ -976,7 +1209,7 @@ function ProductsSection() {
           top: '50%',
           transform: 'translateY(-50%)',
           fontFamily: T.displayFont,
-          fontSize: 'clamp(120px, 20vw, 280px)',
+          fontSize: 'clamp(72px, 20vw, 280px)',
           color: `${T.volt}06`,
           lineHeight: 1,
           letterSpacing: '0.01em',
@@ -997,9 +1230,15 @@ function ProductsSection() {
         style={{ position: 'relative', zIndex: 1, maxWidth: '800px' }}
       >
         <SectionEyebrow>Products</SectionEyebrow>
-        <DisplayHeadline size="xl" color={T.chalk} style={{ marginBottom: '32px', whiteSpace: 'normal' as const }}>
-          Something<br />
-          <span style={{ color: T.volt }}>Powerful</span><br />
+        <DisplayHeadline
+          size="xl"
+          color={T.chalk}
+          style={{ marginBottom: '32px', whiteSpace: 'normal' as const }}
+        >
+          Something
+          <br />
+          <span style={{ color: T.volt }}>Powerful</span>
+          <br />
           Is Coming
         </DisplayHeadline>
 
@@ -1013,14 +1252,18 @@ function ProductsSection() {
             marginBottom: '48px',
           }}
         >
-          We're building a suite of AI-powered sports technology products that will transform how athletes train, how coaches strategise, and how fans experience sport. Details coming soon — stay tuned.
+          We're building a suite of AI-powered sports technology products that
+          will transform how athletes train, how coaches strategise, and how
+          fans experience sport. Details coming soon — stay tuned.
         </p>
 
         {/* Teaser cards */}
         <div
+          className="pp-teaser-grid"
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gridTemplateColumns:
+              'repeat(auto-fit, minmax(min(200px, 100%), 1fr))',
             gap: '2px',
             background: T.border,
             marginBottom: '48px',
@@ -1032,7 +1275,7 @@ function ProductsSection() {
               key={name}
               style={{
                 background: T.surface,
-                padding: '32px 24px',
+                padding: 'clamp(24px, 5vw, 32px) clamp(16px, 4vw, 24px)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px',
@@ -1078,7 +1321,9 @@ function ProductsSection() {
           href="#contact"
           onClick={(e) => {
             e.preventDefault();
-            document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+            document
+              .getElementById('contact')
+              ?.scrollIntoView({ behavior: 'smooth' });
           }}
         >
           Register Interest <ChevronRight size={16} />
@@ -1100,15 +1345,17 @@ function ContactSection() {
       style={{
         background: T.surfaceBlue,
         borderTop: `1px solid ${T.border}`,
-        padding: 'clamp(80px, 10vw, 120px) 48px',
+        padding: `clamp(80px, 10vw, 120px) ${SECTION_PAD_X}`,
       }}
     >
       <div
+        className="pp-contact-grid"
         style={{
           maxWidth: '1200px',
           margin: '0 auto',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gridTemplateColumns:
+            'repeat(auto-fit, minmax(min(300px, 100%), 1fr))',
           gap: 'clamp(48px, 7vw, 96px)',
           alignItems: 'start',
         }}
@@ -1122,8 +1369,10 @@ function ContactSection() {
         >
           <SectionEyebrow>Contact Us</SectionEyebrow>
           <DisplayHeadline size="lg" style={{ marginBottom: '32px' }}>
-            Let's Build<br />
-            The Future<br />
+            Let's Build
+            <br />
+            The Future
+            <br />
             Together
           </DisplayHeadline>
           <p
@@ -1135,7 +1384,9 @@ function ContactSection() {
               maxWidth: '50ch',
             }}
           >
-            Whether you're an athlete, a sports organisation, an investor, or a technology partner — we want to hear from you. Reach out and let's explore what's possible.
+            Whether you're an athlete, a sports organisation, an investor, or a
+            technology partner — we want to hear from you. Reach out and let's
+            explore what's possible.
           </p>
         </motion.div>
 
@@ -1152,8 +1403,8 @@ function ContactSection() {
                 background: T.surface,
                 border: `1px solid ${T.volt}40`,
                 borderRadius: '4px',
-                padding: '48px 40px',
-                textAlign: 'center',
+                padding: 'clamp(32px, 6vw, 48px) clamp(24px, 5vw, 40px)',
+                textAlign: 'center' as const,
               }}
             >
               <div
@@ -1168,7 +1419,14 @@ function ContactSection() {
               >
                 Message Received
               </div>
-              <p style={{ fontFamily: T.bodyFont, fontSize: '15px', color: T.chalkSecondary, lineHeight: 1.6 }}>
+              <p
+                style={{
+                  fontFamily: T.bodyFont,
+                  fontSize: '15px',
+                  color: T.chalkSecondary,
+                  lineHeight: 1.6,
+                }}
+              >
                 Thanks for reaching out. We'll be in touch shortly.
               </p>
             </div>
@@ -1258,7 +1516,7 @@ function ContactSection() {
                 background: T.surface,
                 border: `1px solid ${T.border}`,
                 borderRadius: '8px',
-                padding: '40px',
+                padding: 'clamp(24px, 6vw, 40px)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '24px',
@@ -1289,7 +1547,8 @@ function ContactSection() {
                     lineHeight: 1.5,
                   }}
                 >
-                  For partnerships, technology enquiries, or corporate development queries, reach out directly.
+                  For partnerships, technology enquiries, or corporate
+                  development queries, reach out directly.
                 </p>
               </div>
 
@@ -1320,10 +1579,14 @@ function ContactSection() {
                     color: T.volt,
                     textDecoration: 'none',
                     display: 'inline-flex',
+                    flexWrap: 'wrap' as const,
                     alignItems: 'center',
                     gap: '10px',
                     fontWeight: 600,
                     transition: `color 150ms ${T.ease}, transform 150ms ${T.ease}`,
+                    wordBreak: 'break-word' as const,
+                    overflowWrap: 'break-word' as const,
+                    maxWidth: '100%',
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = T.chalk;
@@ -1357,13 +1620,25 @@ export default function HomePage() {
           name="description"
           content="PowerplAI Sports harnesses artificial intelligence to transform athletic performance, analytics, and fan engagement. The future of sport starts here."
         />
-        <meta property="og:title" content="PowerplAI Sports — The Future of Sport" />
+        <meta
+          property="og:title"
+          content="PowerplAI Sports — The Future of Sport"
+        />
         <meta
           property="og:description"
           content="AI-powered sports technology for athletes, coaches, and organisations. Performance intelligence, analytics, and fan engagement."
         />
         <meta property="og:type" content="website" />
       </Helmet>
+
+      {/* Global guard against horizontal scroll on small viewports */}
+      <style>{`
+        @media (max-width: ${TABLET_BP}px) {
+          html, body {
+            overflow-x: hidden;
+          }
+        }
+      `}</style>
 
       <HeroSection />
       <PitchSection />

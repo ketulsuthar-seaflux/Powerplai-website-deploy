@@ -52,11 +52,14 @@ export default function Header() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0 48px',
+        padding: '0 clamp(16px, 4vw, 48px)',
         background: isScrolled ? 'rgba(13,13,13,0.96)' : 'rgba(13,13,13,0)',
-        borderBottom: isScrolled ? '1px solid #2A2A2A' : '1px solid transparent',
+        borderBottom: isScrolled
+          ? '1px solid #2A2A2A'
+          : '1px solid transparent',
         backdropFilter: isScrolled ? 'blur(4px)' : 'none',
-        transition: 'background 300ms cubic-bezier(0.4,0,0.2,1), border-color 300ms cubic-bezier(0.4,0,0.2,1)',
+        transition:
+          'background 300ms cubic-bezier(0.4,0,0.2,1), border-color 300ms cubic-bezier(0.4,0,0.2,1)',
       }}
       aria-label="Main navigation"
     >
@@ -76,7 +79,7 @@ export default function Header() {
           src="/airo-assets/images/logo/horizontal"
           alt="PowerplAI Sports — Unlocking Sports Intelligence"
           style={{
-            height: '36px',
+            height: 'clamp(28px, 4vw, 36px)',
             width: 'auto',
             maxWidth: '160px',
             objectFit: 'contain',
@@ -88,7 +91,11 @@ export default function Header() {
       </a>
 
       {/* Desktop nav */}
-      <nav className="hidden md:flex" style={{ alignItems: 'center', gap: '36px' }} aria-label="Site sections">
+      <nav
+        className="hidden md:flex"
+        style={{ alignItems: 'center', gap: '36px' }}
+        aria-label="Site sections"
+      >
         {navLinks.map((link) => (
           <a
             key={link.href}
@@ -131,7 +138,8 @@ export default function Header() {
           letterSpacing: '0.05em',
           textDecoration: 'none',
           whiteSpace: 'nowrap',
-          transition: 'background 150ms cubic-bezier(0.4,0,0.2,1), color 150ms cubic-bezier(0.4,0,0.2,1)',
+          transition:
+            'background 150ms cubic-bezier(0.4,0,0.2,1), color 150ms cubic-bezier(0.4,0,0.2,1)',
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.background = '#FF6B00';
@@ -151,7 +159,13 @@ export default function Header() {
         onClick={() => setIsMobileOpen(!isMobileOpen)}
         aria-label={isMobileOpen ? 'Close menu' : 'Open menu'}
         aria-expanded={isMobileOpen}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ffffff', padding: '8px' }}
+        style={{
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          color: '#ffffff',
+          padding: '8px',
+        }}
       >
         {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
